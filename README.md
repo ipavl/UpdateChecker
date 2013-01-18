@@ -1,6 +1,7 @@
 UpdateChecker
 =============
 
+<<<<<<< HEAD
 A simple program to manually check for and download updates from a remote server.
 
 Instructions for use:
@@ -12,3 +13,6 @@ Default configuration:
 	- remote version file name: version
 	- local version file name: version
 	- update file name: update.zip
+=======
+A simple program to manually check for and download updates from a remote server.
+>>>>>>> a13dd279075dac10beb6b7ffc4134d30acb68c6e
