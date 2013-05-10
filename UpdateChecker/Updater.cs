@@ -60,17 +60,17 @@ namespace UpdateChecker
             {
                 int currentVersion, latestVersion;
 
+                // If the version file is missing, make a dummy one
+                if (!File.Exists(Properties.Settings.Default.LocalVersionFile))
+                {
+                    using (StreamWriter sw = File.CreateText(Properties.Settings.Default.LocalVersionFile))
+                    {
+                        sw.WriteLine("-1"); // it should be safe to assume no one will use a version of -1
+                    }
+                }
+
                 using (StreamReader sr = new StreamReader(Properties.Settings.Default.LocalVersionFile))
                 {
-                    // If the version file is missing, make a dummy one
-                    if (!File.Exists(Properties.Settings.Default.LocalVersionFile))
-                    {
-                        using (StreamWriter sw = File.CreateText(Properties.Settings.Default.LocalVersionFile))
-                        {
-                            sw.WriteLine("-1"); // it should be safe to assume no one will use a version of -1
-                        }
-                    }
-
                     String current = sr.ReadToEnd();
                     currentVersion = Convert.ToInt32(current);
                     Debug.Print("Current: " + currentVersion);
@@ -141,7 +141,7 @@ namespace UpdateChecker
                     Debug.Print("Update file removed");
 
                     MessageBox.Show("Update successful.", "");
-                    lblCurrent.Text = latestVersion.ToString();
+                    lblCurrent.Text = "Current version: " + latestVersion.ToString();
                 }
             }
             catch (Exception ex)
