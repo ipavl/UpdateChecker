@@ -1,7 +1,7 @@
 ﻿/* Updater.cs
- * UpdateChecker <https://github.com/ippavlin/UpdateChecker>
+ * UpdateChecker <https://github.com/ipavl/UpdateChecker>
  * 
- * Copyright (c)2013 ippavlin. All rights reserved.
+ * Copyright (c)2013 ipavl. All rights reserved.
  */
 
 using System;
@@ -9,6 +9,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Windows.Forms;
+using Ionic.Zip;
 
 namespace UpdateChecker
 {
@@ -42,6 +43,7 @@ namespace UpdateChecker
 
             // Download the file from the remote server based on settings file configuration of URLs and file names.
             String remoteVer = Properties.Settings.Default.BaseURL + Properties.Settings.Default.VersionFile;
+
             try
             {
                 WebClient webClient = new WebClient();
@@ -57,18 +59,30 @@ namespace UpdateChecker
             try
             {
                 int currentVersion, latestVersion;
+
                 using (StreamReader sr = new StreamReader(Properties.Settings.Default.LocalVersionFile))
                 {
+                    // If the version file is missing, make a dummy one
+                    if (!File.Exists(Properties.Settings.Default.LocalVersionFile))
+                    {
+                        using (StreamWriter sw = File.CreateText(Properties.Settings.Default.LocalVersionFile))
+                        {
+                            sw.WriteLine("-1"); // it should be safe to assume no one will use a version of -1
+                        }
+                    }
+
                     String current = sr.ReadToEnd();
                     currentVersion = Convert.ToInt32(current);
                     Debug.Print("Current: " + currentVersion);
                 }
+
                 using (StreamReader sr = new StreamReader(Properties.Settings.Default.VersionFile + ".tmp"))
                 {
                     String latest = sr.ReadToEnd();
                     latestVersion = Convert.ToInt32(latest);
                     Debug.Print("Latest: " + latestVersion);
                 }
+
                 // Compare version information
                 if (currentVersion < latestVersion)
                 {
@@ -106,11 +120,28 @@ namespace UpdateChecker
                     File.Delete(Properties.Settings.Default.VersionFile);
                     File.Copy(Properties.Settings.Default.VersionFile + ".tmp", Properties.Settings.Default.VersionFile);
                     webClient.DownloadFile(remoteVer, @Properties.Settings.Default.VersionFile);
+                    File.Delete(Properties.Settings.Default.VersionFile + ".tmp");
                     
-                    // Download update file (TODO: unzip or find alternative to downloading)
+                    // Download update file
+                    Debug.Print("Downloading update file");
                     webClient.DownloadFile(updateFile, @Properties.Settings.Default.UpdateFile);
 
+                    // Extract the update file
+                    Debug.Print("Extracting update file");
+                    using (ZipFile zip = ZipFile.Read(@Properties.Settings.Default.UpdateFile))
+                    {
+                        foreach (ZipEntry file in zip)
+                        {
+                            file.Extract(AppDomain.CurrentDomain.BaseDirectory, ExtractExistingFileAction.OverwriteSilently);
+                        }
+                    }
+                    
+                    // Remove update file
+                    File.Delete(@Properties.Settings.Default.UpdateFile);
+                    Debug.Print("Update file removed");
+
                     MessageBox.Show("Update successful.", "");
+                    lblCurrent.Text = latestVersion.ToString();
                 }
             }
             catch (Exception ex)
