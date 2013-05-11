@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("UpdateChecker")]
-[assembly: AssemblyCopyright("Copyright © ippavlin 2013")]
+[assembly: AssemblyCopyright("Copyright © ipavl 2013")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
